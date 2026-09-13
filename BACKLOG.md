@@ -9,7 +9,6 @@ Rough order of value. Done items move to git history, not here.
 - [ ] Rotary speaker / chorus-vibrato (Leslie): stereo, slow/fast with ramp between speeds.
 - [ ] Pipe-organ mode: sampled or wavetable stops (principal, flute, reed) as an alternative to drawbars.
 - [ ] Reverb (convolution with a hall impulse) with a wet/dry control.
-- [ ] Voice stealing / max-polyphony guard so a mashed keyboard can't pile up hundreds of oscillators.
 - [ ] Tune the compressor and per-partial scale by ear on real speakers; the limiter currently does a lot of work at 888 888 888.
 - [ ] Expression pedal (volume swell) — MIDI CC 11 is already wired to volume; this is about an on-screen control.
 

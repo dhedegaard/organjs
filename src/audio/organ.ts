@@ -19,6 +19,9 @@ export const DEFAULT_SETTINGS: OrganSettings = {
   volume: 0.6,
 }
 
+/** Voices held at once before the oldest is stolen; keeps a mashed keyboard from piling up oscillators. */
+export const MAX_VOICES = 16
+
 const ATTACK_SECONDS = 0.012
 const RELEASE_SECONDS = 0.08
 const TREMULANT_RATE_HZ = 5.8
@@ -75,6 +78,7 @@ export class Organ {
 
   noteOn(note: MidiNote): void {
     if (this.voices.has(note)) return
+    if (this.voices.size >= MAX_VOICES) this.stealOldestVoice()
     const now = this.ctx.currentTime
     const partials = partialsFor(midiToFrequency(note), this.settings.drawbars)
 
@@ -113,6 +117,12 @@ export class Organ {
     const stopAt = now + RELEASE_SECONDS + 0.02
     for (const osc of voice.oscillators) osc.stop(stopAt)
     voice.oscillators[0]?.addEventListener('ended', () => voice.envelope.disconnect())
+  }
+
+  /** The Map keeps insertion order, so the first key is the longest-held note. */
+  private stealOldestVoice(): void {
+    const oldest = this.voices.keys().next()
+    if (!oldest.done) this.noteOff(oldest.value)
   }
 
   allNotesOff(): void {
