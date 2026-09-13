@@ -3,6 +3,7 @@ import type { PercussionSettings } from './audio/organ'
 import { drawbarLevelsSchema } from './audio/voicing'
 import { Drawbars } from './components/Drawbars'
 import { Keyboard } from './components/Keyboard'
+import { Library } from './components/Library'
 import { CopyLink } from './components/CopyLink'
 import { MidiPicker } from './components/MidiPicker'
 import { PianoRoll } from './components/PianoRoll'
@@ -11,6 +12,7 @@ import { Transport } from './components/Transport'
 import { useMidiInput } from './hooks/useMidiInput'
 import { useOrgan } from './hooks/useOrgan'
 import { useQwertyKeys } from './hooks/useQwertyKeys'
+import { useRecordings } from './hooks/useRecordings'
 import { useSequencer } from './hooks/useSequencer'
 import { initialSettingsFromUrl, useRegistrationUrl } from './hooks/useRegistrationUrl'
 
@@ -29,6 +31,7 @@ export default function App() {
   const organ = useOrgan(initialSettingsFromUrl)
   useRegistrationUrl(organ.settings)
   const sequencer = useSequencer(organ)
+  const recordings = useRecordings()
   // Every input plays through the sequencer so it can record.
   const player = { ...organ, noteOn: sequencer.noteOn, noteOff: sequencer.noteOff }
   const qwerty = useQwertyKeys(player)
@@ -107,6 +110,7 @@ export default function App() {
           high={MANUAL_HIGH}
           history={sequencer.history}
         />
+        <Library sequence={sequencer.sequence} onLoad={sequencer.setSequence} recordings={recordings} />
       </section>
       <p className="hint">
         Click or drag across the keys, or play the Z and Q rows on your keyboard, or connect a MIDI keyboard. Pull the

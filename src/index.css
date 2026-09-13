@@ -495,6 +495,48 @@ body {
 .roll__note--selected { fill: var(--ivory); stroke: var(--brass); }
 .roll__playhead { stroke: #e2483a; stroke-width: 1.5; pointer-events: none; }
 
+/* Recording library */
+.library {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+  font-size: 12.5px;
+}
+.library__row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.library__name,
+.library select {
+  font: inherit;
+  font-size: 12.5px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(184, 144, 90, 0.4);
+  background: transparent;
+  color: var(--text);
+}
+.library__name { width: 180px; }
+.library__name::placeholder { color: var(--text-dim); }
+.library select { max-width: 240px; }
+.library__name:focus-visible,
+.library select:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+
+.library__button {
+  font: inherit;
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(184, 144, 90, 0.4);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+}
+.library__button:hover { border-color: var(--brass); }
+.library__button:disabled { opacity: 0.4; cursor: default; }
+.library__button:disabled:hover { border-color: rgba(184, 144, 90, 0.4); }
+.library__button:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+.library__file { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
+.library__file:focus-visible + * , .library__file:focus-visible { outline: 2px solid var(--brass); }
+.library__error { margin: 0; color: #e2483a; }
+
 @media (max-width: 720px) {
   .rail { grid-template-columns: 1fr; justify-items: stretch; }
   .rail__controls { justify-items: start; }
