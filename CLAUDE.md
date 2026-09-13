@@ -49,3 +49,6 @@ Run typecheck, lint and test before claiming work is done.
 - Press keys with `page.mouse` on the key's `boundingBox()`; `locator.dispatchEvent('pointerdown')` has no coordinates, so the `elementFromPoint` hit-test finds nothing and no note plays.
 - Exercise file import/export with `newPage({ acceptDownloads: true })` + `waitForEvent('download')` and `locator('.library__file').setInputFiles({ name, mimeType, buffer })`.
 - When comparing levels in an offline render, schedule the first event at ~0.1 s, not 0: the compressor and filters have a startup transient that skews peaks at t=0.
+- To put a known sequence in the editor for a browser check, seed `localStorage['organjs.recordings']` via `addInitScript` with `[{ name, savedAt, sequence }]`, then pick it in the "Saved recordings" select and click Load.
+- Before screenshotting the score, `await page.evaluate(() => document.fonts.ready)` and assert `document.fonts.check('32px "Bravura Notation"')`; the SVG text falls back to a system font until the subset loads.
+- `bravura_metadata.json` does not download from raw.githubusercontent.com or jsdelivr here (connection drops); read glyph bounds from the subset with fontTools' `BoundsPen` instead, and use the standard SMuFL anchors (stem up SE at 1.18/0.168 sp, stem down NW at 0/-0.168 sp).
