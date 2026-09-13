@@ -18,6 +18,9 @@ Rough order of value. Done items move to git history, not here.
 
 ## Recording and editing
 
+- [ ] Score view: beam eighths/sixteenths within a beat instead of flags; separate voices when a held note overlaps a moving line (today everything is cut into tied chords).
+- [ ] Score view: quantise action that writes the snapped timing back to the sequence.
+- [ ] Editing in the score (click a staff position to add, drag to move) — the piano roll stays the primary editor.
 
 ## Console UI
 

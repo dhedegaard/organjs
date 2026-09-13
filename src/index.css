@@ -15,6 +15,14 @@
   --cap-black: #1f1d1a;
   --cap-white: #ece4d2;
   --font: 'Instrument Sans', 'Helvetica Neue', Arial, sans-serif;
+  --music-font: 'Bravura Notation';
+}
+
+/* Subset of Bravura (SIL OFL, see assets/BRAVURA-LICENSE.txt): clefs, heads, flags, rests, accidentals. */
+@font-face {
+  font-family: 'Bravura Notation';
+  src: url('./assets/bravura-notation.woff2') format('woff2');
+  font-display: block;
 }
 
 * { box-sizing: border-box; }
@@ -494,6 +502,25 @@ body {
 .roll__note:hover { fill: #d1a86c; }
 .roll__note--selected { fill: var(--ivory); stroke: var(--brass); }
 .roll__playhead { stroke: #e2483a; stroke-width: 1.5; pointer-events: none; }
+
+.roll__views { display: inline-flex; }
+.roll__view { border-radius: 0; margin-right: -1px; }
+.roll__view:first-child { border-radius: 999px 0 0 999px; }
+.roll__view:last-child { border-radius: 0 999px 999px 0; }
+.roll__view--on { background: var(--brass); border-color: var(--brass); color: var(--walnut-deep); }
+.roll__view--on:hover { border-color: var(--brass); }
+
+/* Score view */
+.score { cursor: default; }
+.score__glyph { font-family: var(--music-font); fill: var(--ivory); pointer-events: none; }
+.score__line, .score__barline { stroke: rgba(243, 236, 216, 0.35); stroke-width: 1; }
+.score__barline { stroke: rgba(243, 236, 216, 0.55); }
+.score__ledger { stroke: var(--ivory); stroke-width: 1.3; opacity: 0.8; }
+.score__stem { stroke: var(--ivory); stroke-width: 1; }
+.score__tie { fill: none; stroke: var(--ivory); stroke-width: 1.4; }
+.score__chord--playing .score__glyph { fill: var(--brass); }
+.score__chord--playing .score__stem, .score__chord--playing .score__ledger { stroke: var(--brass); }
+.score__rest .score__glyph { fill: var(--text-dim); }
 
 /* Recording library */
 .library {

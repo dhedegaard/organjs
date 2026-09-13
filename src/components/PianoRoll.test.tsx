@@ -2,7 +2,8 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { midiNoteSchema } from '../audio/notes'
 import type { Sequence } from '../sequence/sequence'
-import { KEYS_WIDTH, PianoRoll, ROW_HEIGHT, RULER_HEIGHT } from './PianoRoll'
+import { KEYS_WIDTH, PianoRoll, ROW_HEIGHT } from './PianoRoll'
+import { RULER_HEIGHT } from './timeline'
 
 const note = (n: number) => midiNoteSchema.parse(n)
 const low = note(48)
@@ -86,5 +87,18 @@ describe('PianoRoll', () => {
     expect(onSeek).toHaveBeenCalledWith(3)
     fireEvent.keyDown(screen.getByRole('application'), { key: 'z', metaKey: true })
     expect(undo).toHaveBeenCalled()
+  })
+})
+
+describe('PianoRoll view toggle', () => {
+  it('switches between the roll and the score', () => {
+    render(<PianoRoll sequence={one} onChange={() => {}} position={0} onSeek={() => {}} low={low} high={high} history={history} />)
+    expect(screen.getByRole('application', { name: 'Piano roll' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Score' }))
+    expect(screen.getByRole('application', { name: 'Score' })).toBeInTheDocument()
+    expect(screen.getByLabelText('C4 quarter at 0:01.0')).toBeInTheDocument()
+    expect(screen.queryByLabelText('Grid')).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Roll' }))
+    expect(screen.getByLabelText('C4 at 0:01.0')).toBeInTheDocument()
   })
 })

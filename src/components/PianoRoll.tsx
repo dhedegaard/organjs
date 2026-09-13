@@ -4,6 +4,8 @@ import { addNote, deleteNotes, GRID_OPTIONS, moveNote, resizeNote, snapTime } fr
 import { sequenceLength, type Sequence, type SequenceNote } from '../sequence/sequence'
 import { formatSeconds } from '../sequence/time'
 import type { EditHistory } from '../hooks/useSequencer'
+import { CLEF_WIDTH, Score } from './Score'
+import { RULER_HEIGHT } from './timeline'
 
 interface PianoRollProps {
   readonly sequence: Sequence
@@ -17,12 +19,13 @@ interface PianoRollProps {
 }
 
 export const ROW_HEIGHT = 12
-export const RULER_HEIGHT = 20
 export const KEYS_WIDTH = 36
 const RESIZE_HANDLE = 7
 const DEFAULT_ADD_SECONDS = 0.25
 const MIN_VISIBLE_SECONDS = 8
 const NUDGE_SECONDS = 0.1
+
+type View = 'roll' | 'score'
 
 interface Drag {
   readonly mode: 'move' | 'resize'
@@ -46,6 +49,7 @@ export function PianoRoll({ sequence, onChange, position, onSeek, low, high, his
   const [pixelsPerSecond, setPixelsPerSecond] = useState(80)
   const [drag, setDrag] = useState<Drag | null>(null)
   const [viewportWidth, setViewportWidth] = useState(0)
+  const [view, setView] = useState<View>('roll')
   const scrollRef = useRef<HTMLDivElement>(null)
 
   const grid = GRID_OPTIONS[gridIndex]?.seconds ?? 0
@@ -75,26 +79,25 @@ export function PianoRoll({ sequence, onChange, position, onSeek, low, high, his
   // Scroll vertically to the notes (or middle C when there are none) whenever a new sequence arrives.
   useEffect(() => {
     const el = scrollRef.current
-    if (!el) return
+    if (!el || view === 'score') return
     const pitches = sequence.notes.map((n) => n.note)
     const centre = pitches.length > 0 ? (Math.max(...pitches) + Math.min(...pitches)) / 2 : 60
     const y = RULER_HEIGHT + (top - centre) * ROW_HEIGHT
     el.scrollTop = Math.max(0, y - el.clientHeight / 2)
     // Only the sequence identity should trigger this; `top` follows from it.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sequence])
+  }, [sequence, view])
 
   // Keep the playhead in view while it moves.
   useEffect(() => {
     const el = scrollRef.current
     if (!el) return
-    const x = xOf(position)
-    if (x < el.scrollLeft + KEYS_WIDTH || x > el.scrollLeft + el.clientWidth - 20) {
-      el.scrollLeft = Math.max(0, x - KEYS_WIDTH - 40)
+    const inset = view === 'score' ? CLEF_WIDTH : KEYS_WIDTH
+    const x = inset + position * pixelsPerSecond
+    if (x < el.scrollLeft + inset || x > el.scrollLeft + el.clientWidth - 20) {
+      el.scrollLeft = Math.max(0, x - inset - 40)
     }
-    // xOf changes with zoom, which is covered by pixelsPerSecond.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [position, pixelsPerSecond])
+  }, [position, pixelsPerSecond, view])
 
   const localPoint = (e: ReactPointerEvent<SVGSVGElement>) => {
     const rect = e.currentTarget.getBoundingClientRect()
@@ -197,16 +200,31 @@ export function PianoRoll({ sequence, onChange, position, onSeek, low, high, his
   return (
     <div className="roll">
       <div className="roll__toolbar">
-        <label className="roll__field">
-          Grid
-          <select value={gridIndex} onChange={(e) => setGridIndex(Number(e.target.value))}>
-            {GRID_OPTIONS.map((g, i) => (
-              <option key={g.label} value={i}>
-                {g.label}
-              </option>
-            ))}
-          </select>
-        </label>
+        <div className="roll__views" role="group" aria-label="View">
+          {(['roll', 'score'] as const).map((v) => (
+            <button
+              key={v}
+              type="button"
+              className={`roll__button roll__view${view === v ? ' roll__view--on' : ''}`}
+              aria-pressed={view === v}
+              onClick={() => setView(v)}
+            >
+              {v === 'roll' ? 'Roll' : 'Score'}
+            </button>
+          ))}
+        </div>
+        {view === 'roll' && (
+          <label className="roll__field">
+            Grid
+            <select value={gridIndex} onChange={(e) => setGridIndex(Number(e.target.value))}>
+              {GRID_OPTIONS.map((g, i) => (
+                <option key={g.label} value={i}>
+                  {g.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         <label className="roll__field">
           Zoom
           <input
@@ -224,9 +242,11 @@ export function PianoRoll({ sequence, onChange, position, onSeek, low, high, his
         <button type="button" className="roll__button" disabled={!history.canRedo} onClick={history.redo}>
           Redo
         </button>
-        <button type="button" className="roll__button" disabled={selected.size === 0} onClick={deleteSelection}>
-          Delete
-        </button>
+        {view === 'roll' && (
+          <button type="button" className="roll__button" disabled={selected.size === 0} onClick={deleteSelection}>
+            Delete
+          </button>
+        )}
         <button
           type="button"
           className="roll__button"
@@ -240,10 +260,13 @@ export function PianoRoll({ sequence, onChange, position, onSeek, low, high, his
         className="roll__scroll"
         ref={scrollRef}
         role="application"
-        aria-label="Piano roll"
+        aria-label={view === 'score' ? 'Score' : 'Piano roll'}
         tabIndex={0}
         onKeyDown={onKeyDown}
       >
+        {view === 'score' ? (
+          <Score sequence={sequence} position={position} onSeek={onSeek} pixelsPerSecond={pixelsPerSecond} minWidth={viewportWidth} />
+        ) : (
         <svg
           className="roll__canvas"
           width={width}
@@ -309,6 +332,7 @@ export function PianoRoll({ sequence, onChange, position, onSeek, low, high, his
           ))}
           <line className="roll__playhead" x1={xOf(position)} x2={xOf(position)} y1={0} y2={height} />
         </svg>
+        )}
       </div>
     </div>
   )
