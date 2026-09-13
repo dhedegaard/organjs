@@ -2,7 +2,9 @@ import { midiNoteSchema } from './audio/notes'
 import { drawbarLevelsSchema } from './audio/voicing'
 import { Drawbars } from './components/Drawbars'
 import { Keyboard } from './components/Keyboard'
+import { MidiPicker } from './components/MidiPicker'
 import { Tab } from './components/Tab'
+import { useMidiInput } from './hooks/useMidiInput'
 import { useOrgan } from './hooks/useOrgan'
 import { useQwertyKeys } from './hooks/useQwertyKeys'
 
@@ -20,6 +22,7 @@ const PRESETS = {
 export default function App() {
   const organ = useOrgan()
   useQwertyKeys(organ)
+  const midi = useMidiInput(organ)
 
   return (
     <main className="console">
@@ -51,6 +54,7 @@ export default function App() {
               onChange={(e) => organ.updateSettings({ volume: Number(e.target.value) })}
             />
           </label>
+          <MidiPicker midi={midi} />
         </div>
       </section>
       <div className="fallboard" aria-hidden="true" />
@@ -61,7 +65,7 @@ export default function App() {
         onNoteOn={organ.noteOn}
         onNoteOff={organ.noteOff}
       />
-      <p className="hint">Click or drag across the keys, or play the Z and Q rows on your keyboard. Pull the drawbars down to add harmonics.</p>
+      <p className="hint">Click or drag across the keys, or play the Z and Q rows on your keyboard, or connect a MIDI keyboard. Pull the drawbars down to add harmonics.</p>
     </main>
   )
 }

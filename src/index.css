@@ -251,6 +251,26 @@ body {
 }
 .volume input { width: 120px; accent-color: var(--brass); }
 
+.midi {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  margin: 0;
+}
+.midi__note { color: var(--text-dim); max-width: 260px; text-align: right; }
+.midi select {
+  font: inherit;
+  font-size: 12.5px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(184, 144, 90, 0.4);
+  background: transparent;
+  color: var(--text);
+  max-width: 180px;
+}
+.midi select:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+
 /* Fallboard with felt strip */
 .fallboard {
   height: 14px;

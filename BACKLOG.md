@@ -11,17 +11,10 @@ Rough order of value. Done items move to git history, not here.
 - [ ] Reverb (convolution with a hall impulse) with a wet/dry control.
 - [ ] Voice stealing / max-polyphony guard so a mashed keyboard can't pile up hundreds of oscillators.
 - [ ] Tune the compressor and per-partial scale by ear on real speakers; the limiter currently does a lot of work at 888 888 888.
-- [ ] Expression pedal (volume swell) — could also be a MIDI CC.
+- [ ] Expression pedal (volume swell) — MIDI CC 11 is already wired to volume; this is about an on-screen control.
 
 ## Playing
 
-- [ ] MIDI keyboard input via the Web MIDI API (`navigator.requestMIDIAccess`):
-  - Device picker listing inputs, auto-select when only one, follow hot-plug via `statechange`.
-  - Note on/off → `noteOn`/`noteOff`; treat note on with velocity 0 as note off; light the on-screen keys.
-  - Map CC to controls: expression pedal (CC 11) → volume, a configurable CC range → the nine drawbars, a switch CC → tremulant.
-  - Parse incoming messages with zod at the boundary; ignore channels/messages we don't handle.
-  - Unsupported browsers (Safari) get a short note explaining MIDI is unavailable; the rest of the app keeps working.
-  - Requires a secure context (https or localhost) and a user permission prompt in Chrome.
 - [ ] Octave shift for the QWERTY rows (e.g. `[` / `]`).
 - [ ] Sustain / hold toggle so chords can be held while adjusting drawbars.
 - [ ] Second manual (Swell/Great) and a pedalboard with their own drawbar sets.
