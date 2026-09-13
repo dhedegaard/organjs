@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from 'react'
 import { isBlackKey, midiToName, toMidiNote, type MidiNote } from '../audio/notes'
 import { addNote, deleteNotes, GRID_OPTIONS, moveNote, resizeNote, snapTime } from '../sequence/edit'
 import { sequenceLength, type Sequence, type SequenceNote } from '../sequence/sequence'
@@ -45,6 +45,7 @@ export function PianoRoll({ sequence, onChange, position, onSeek, low, high, his
   const [gridIndex, setGridIndex] = useState(2)
   const [pixelsPerSecond, setPixelsPerSecond] = useState(80)
   const [drag, setDrag] = useState<Drag | null>(null)
+  const [viewportWidth, setViewportWidth] = useState(0)
   const scrollRef = useRef<HTMLDivElement>(null)
 
   const grid = GRID_OPTIONS[gridIndex]?.seconds ?? 0
@@ -53,13 +54,35 @@ export function PianoRoll({ sequence, onChange, position, onSeek, low, high, his
   const bottom = Math.min(low, ...shown.notes.map((n) => n.note))
   const rows = top - bottom + 1
   const seconds = Math.max(MIN_VISIBLE_SECONDS, sequenceLength(shown) + 2)
-  const width = KEYS_WIDTH + seconds * pixelsPerSecond
+  const width = Math.max(viewportWidth, KEYS_WIDTH + seconds * pixelsPerSecond)
   const height = RULER_HEIGHT + rows * ROW_HEIGHT
 
   const xOf = (time: number) => KEYS_WIDTH + time * pixelsPerSecond
   const timeAt = (x: number) => (x - KEYS_WIDTH) / pixelsPerSecond
   const yOf = (note: number) => RULER_HEIGHT + (top - note) * ROW_HEIGHT
   const noteAt = (y: number) => toMidiNote(top - Math.floor((y - RULER_HEIGHT) / ROW_HEIGHT))
+
+  // Fill the panel horizontally, whatever its width.
+  useLayoutEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    const measure = () => setViewportWidth(el.clientWidth)
+    measure()
+    window.addEventListener('resize', measure)
+    return () => window.removeEventListener('resize', measure)
+  }, [])
+
+  // Scroll vertically to the notes (or middle C when there are none) whenever a new sequence arrives.
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    const pitches = sequence.notes.map((n) => n.note)
+    const centre = pitches.length > 0 ? (Math.max(...pitches) + Math.min(...pitches)) / 2 : 60
+    const y = RULER_HEIGHT + (top - centre) * ROW_HEIGHT
+    el.scrollTop = Math.max(0, y - el.clientHeight / 2)
+    // Only the sequence identity should trigger this; `top` follows from it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sequence])
 
   // Keep the playhead in view while it moves.
   useEffect(() => {
