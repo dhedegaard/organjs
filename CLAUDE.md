@@ -26,3 +26,10 @@ Run typecheck, lint and test before claiming work is done.
 - Settings are immutable snapshots (`OrganSettings`); `Organ.update()` diffs by reference, so always create a new `drawbars` tuple (use `withLevel`).
 - Pure logic (note math, voicing, key maps) gets a Vitest file next to it. Audio and UI are verified in a real browser; jsdom has no `AudioContext`.
 - Design intent lives in `BACKLOG.md` (what's next) and the token block at the top of `index.css`.
+- Module-level `toMidiNote()` results don't narrow inside components (control flow stops at function boundaries); use `midiNoteSchema.parse(48)` for constants.
+- Offline engine checks: call `ctx.suspend(t).then(...)` *before* `await ctx.startRendering()` on an `OfflineAudioContext`; awaiting the suspend first deadlocks.
+
+## Verifying in a browser
+
+- No Chrome on this machine; use Playwright's cached Chromium (`npx playwright install chromium` once). Run a throwaway script from the scratchpad, not the repo: `npm init -y && npm i playwright`, then drive `http://localhost:<port>` and screenshot.
+- Start the dev server on a fixed port (`npm run dev -- --port 5180`) and stop it by PID via `lsof -ti:5180`, never by name.
