@@ -1,0 +1,341 @@
+:root {
+  --room: #15110e;
+  --walnut: #3b2a1e;
+  --walnut-deep: #2a1c13;
+  --walnut-edge: #55402f;
+  --felt: #6b1f1f;
+  --ivory: #f3ecd8;
+  --ivory-shade: #d9cfb5;
+  --ebony: #1c1a17;
+  --ebony-face: #2b2825;
+  --brass: #b8905a;
+  --text: #e8dfcc;
+  --text-dim: #a89b85;
+  --cap-brown: #6e4a2e;
+  --cap-black: #1f1d1a;
+  --cap-white: #ece4d2;
+  --font: 'Instrument Sans', 'Helvetica Neue', Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--room);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  padding: 24px 16px;
+  background:
+    radial-gradient(ellipse at 50% 0%, #241b14 0%, var(--room) 60%);
+}
+
+/* Console cabinet */
+.console {
+  width: min(1200px, 100%);
+  border-radius: 10px 10px 4px 4px;
+  background: linear-gradient(180deg, var(--walnut-edge) 0, var(--walnut) 6px, var(--walnut-deep) 100%);
+  box-shadow:
+    0 40px 80px -30px rgba(0, 0, 0, 0.8),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  padding: 20px 20px 16px;
+}
+
+.rail {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 24px;
+  align-items: end;
+  padding: 4px 8px 18px;
+}
+
+.rail__title {
+  margin: 0 0 6px;
+  align-self: start;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--brass);
+}
+
+/* Drawbars */
+.drawbars {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  padding: 6px 12px 0;
+  border-radius: 4px;
+  background: linear-gradient(180deg, #1a130e, #211810);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+
+.drawbar {
+  --travel: 96px;
+  --cap-h: 34px;
+  position: relative;
+  width: 36px;
+  padding-bottom: 20px;
+  cursor: ns-resize;
+  touch-action: none;
+  user-select: none;
+  outline: none;
+  border-radius: 4px;
+}
+.drawbar:focus-visible { box-shadow: 0 0 0 2px var(--brass); }
+
+.drawbar__track {
+  position: relative;
+  height: calc(var(--travel) + var(--cap-h));
+}
+
+.drawbar__shaft {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 10px;
+  height: calc(var(--level) / 8 * var(--travel) + var(--cap-h) / 2);
+  transform: translateX(-50%);
+  background: linear-gradient(90deg, #4a4540, #8d857a 45%, #4a4540);
+  border-radius: 0 0 2px 2px;
+  transition: height 60ms ease-out;
+}
+
+.drawbar__cap {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--level) / 8 * var(--travel));
+  height: var(--cap-h);
+  display: grid;
+  place-items: center;
+  border-radius: 3px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transition: top 60ms ease-out;
+}
+.drawbar--brown .drawbar__cap { background: var(--cap-brown); color: var(--ivory); }
+.drawbar--black .drawbar__cap { background: var(--cap-black); color: var(--ivory); }
+.drawbar--white .drawbar__cap { background: var(--cap-white); color: var(--ebony); }
+
+.drawbar__footage {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.drawbar__level {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-dim);
+}
+
+/* Controls */
+.rail__controls {
+  display: grid;
+  gap: 12px;
+  justify-items: end;
+}
+
+.presets {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+  max-width: 260px;
+}
+
+.preset {
+  font: inherit;
+  font-size: 12.5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(184, 144, 90, 0.4);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+}
+.preset:hover { border-color: var(--brass); }
+.preset:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--text);
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+.tab:focus-visible .tab__rocker { outline: 2px solid var(--brass); outline-offset: 3px; }
+
+.tab__lamp {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #3a2a1c;
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.7);
+  transition: background 120ms, box-shadow 120ms;
+}
+.tab--on .tab__lamp {
+  background: #ffb347;
+  box-shadow: 0 0 6px 2px rgba(255, 179, 71, 0.55), inset 0 0 2px rgba(255, 255, 255, 0.8);
+}
+
+.tab__rocker {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  width: 28px;
+  height: 44px;
+  border-radius: 3px;
+  overflow: hidden;
+  perspective: 120px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+  background: #0e0c0a;
+}
+.tab__face {
+  display: block;
+  transition: background 120ms, transform 120ms;
+}
+/* Off: top half sticks out (light), bottom half is pushed in (dark). */
+.tab__face--top {
+  background: linear-gradient(180deg, #fbf6e8, var(--ivory));
+  transform: rotateX(18deg);
+  transform-origin: bottom;
+}
+.tab__face--bottom {
+  background: linear-gradient(180deg, #a89c82, #8f8369);
+  transform: rotateX(-18deg);
+  transform-origin: top;
+}
+/* On: bottom half sticks out, top half is pushed in. */
+.tab--on .tab__face--top {
+  background: linear-gradient(180deg, #8f8369, #a89c82);
+}
+.tab--on .tab__face--bottom {
+  background: linear-gradient(180deg, var(--ivory), #fbf6e8);
+}
+
+.tab__text {
+  display: grid;
+  line-height: 1.2;
+  text-align: left;
+}
+.tab__state {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+.tab--on .tab__state { color: #ffb347; }
+
+.volume {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+.volume input { width: 120px; accent-color: var(--brass); }
+
+/* Fallboard with felt strip */
+.fallboard {
+  height: 14px;
+  margin: 0 -4px 0;
+  border-radius: 3px 3px 0 0;
+  background: linear-gradient(180deg, var(--walnut-edge), var(--walnut-deep) 70%, var(--felt) 70%);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+/* Manual */
+.manual {
+  --white-w: calc(100% / var(--white-count));
+  position: relative;
+  height: clamp(120px, 22vw, 190px);
+  background: var(--ebony);
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  border-radius: 0 0 4px 4px;
+  overflow: hidden;
+}
+
+.key {
+  position: absolute;
+  top: 0;
+  left: calc(var(--offset) * var(--white-w));
+  cursor: pointer;
+}
+
+.key--white {
+  width: var(--white-w);
+  height: 100%;
+  background: linear-gradient(180deg, var(--ivory) 0 85%, var(--ivory-shade));
+  border-right: 1px solid #b3a88f;
+  border-bottom: 5px solid var(--ivory-shade);
+  border-radius: 0 0 3px 3px;
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+}
+.key--white.key--down {
+  background: linear-gradient(180deg, var(--ivory-shade), #cbbf9f);
+  border-bottom-width: 2px;
+  box-shadow: inset 0 6px 8px -4px rgba(0, 0, 0, 0.45);
+}
+
+.key--black {
+  width: calc(0.62 * var(--white-w));
+  height: 62%;
+  z-index: 1;
+  background: linear-gradient(180deg, var(--ebony-face) 0 88%, #0e0d0b);
+  border-radius: 0 0 3px 3px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.6), inset 1px 0 0 rgba(255, 255, 255, 0.08), inset -1px 0 0 rgba(0, 0, 0, 0.6);
+}
+.key--black.key--down {
+  height: 60%;
+  background: #14120f;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.key__name,
+.key__hint {
+  position: absolute;
+  left: 0;
+  right: 0;
+  text-align: center;
+  pointer-events: none;
+  font-size: 11px;
+}
+.key__name { bottom: 8px; color: #8a7f68; }
+.key__hint { bottom: 24px; color: #b0a58a; }
+.key--black .key__hint { bottom: 8px; color: #8e8778; }
+
+.hint {
+  margin: 14px 4px 0;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+@media (max-width: 720px) {
+  .rail { grid-template-columns: 1fr; justify-items: stretch; }
+  .rail__controls { justify-items: start; }
+  .presets { justify-content: flex-start; max-width: none; }
+  .drawbars { overflow-x: auto; justify-content: flex-start; }
+  .key__hint { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drawbar__cap, .drawbar__shaft, .tab__face, .tab__lamp { transition: none; }
+}

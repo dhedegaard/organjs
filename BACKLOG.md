@@ -1,0 +1,38 @@
+# Backlog
+
+Rough order of value. Done items move to git history, not here.
+
+## Sound
+
+- [ ] Percussion (Hammond 2nd/3rd harmonic click with fast decay) — big part of the "organ" feel for jazz registrations.
+- [ ] Key click: short noise burst on note on/off.
+- [ ] Rotary speaker / chorus-vibrato (Leslie): stereo, slow/fast with ramp between speeds.
+- [ ] Pipe-organ mode: sampled or wavetable stops (principal, flute, reed) as an alternative to drawbars.
+- [ ] Reverb (convolution with a hall impulse) with a wet/dry control.
+- [ ] Voice stealing / max-polyphony guard so a mashed keyboard can't pile up hundreds of oscillators.
+- [ ] Tune the compressor and per-partial scale by ear on real speakers; the limiter currently does a lot of work at 888 888 888.
+- [ ] Expression pedal (volume swell) — could also be a MIDI CC.
+
+## Playing
+
+- [ ] Web MIDI input: play from a real keyboard, map CCs to drawbars and expression.
+- [ ] Octave shift for the QWERTY rows (e.g. `[` / `]`).
+- [ ] Sustain / hold toggle so chords can be held while adjusting drawbars.
+- [ ] Second manual (Swell/Great) and a pedalboard with their own drawbar sets.
+- [ ] Touch: multi-finger chords on tablets (pointer map already supports multiple pointers; needs testing on device).
+
+## Console UI
+
+- [ ] Save/load registrations; URL-encode the current registration so it can be shared.
+- [ ] Drawbar numbers editable by typing; show the classic `888 000 000` string.
+- [ ] Visual level meter so the user sees when the limiter engages.
+- [ ] Keyboard-navigable manual (arrow keys move focus, Space plays) for accessibility.
+- [ ] Reduced-motion and high-contrast passes.
+
+## Engineering
+
+- [ ] Browser-level tests (Playwright) for press/glide/QWERTY/drawbar flows — the checks done manually during the first build.
+- [ ] Offline-render regression test for the engine (render 1s through `OfflineAudioContext`, assert RMS/peak bounds).
+- [ ] AudioWorklet engine if oscillator-per-partial gets expensive with more manuals.
+- [ ] PWA manifest + offline caching so it works as an installed instrument.
+- [ ] Deploy (static hosting) and add a CI workflow running typecheck, lint, test, build.
