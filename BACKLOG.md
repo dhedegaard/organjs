@@ -25,7 +25,7 @@ Rough order of value. Done items move to git history, not here.
 
 ## Console UI
 
-- [ ] Save/load registrations; URL-encode the current registration so it can be shared.
+- [ ] Save/load named registrations (local storage). The URL hash already carries the current one.
 - [ ] Drawbar numbers editable by typing; show the classic `888 000 000` string.
 - [ ] Visual level meter so the user sees when the limiter engages.
 - [ ] Keyboard-navigable manual (arrow keys move focus, Space plays) for accessibility.

@@ -11,10 +11,13 @@ export interface OrganController {
   readonly updateSettings: (patch: Partial<OrganSettings>) => void
 }
 
-/** Owns the AudioContext and Organ; both are created lazily on the first note. */
-export function useOrgan(): OrganController {
+/**
+ * Owns the AudioContext and Organ; both are created lazily on the first note.
+ * `initialSettings` may be a lazy initializer, like `useState`'s.
+ */
+export function useOrgan(initialSettings: OrganSettings | (() => OrganSettings) = DEFAULT_SETTINGS): OrganController {
   const organRef = useRef<Organ | null>(null)
-  const [settings, setSettings] = useState<OrganSettings>(DEFAULT_SETTINGS)
+  const [settings, setSettings] = useState<OrganSettings>(initialSettings)
   const [activeNotes, setActiveNotes] = useState<ReadonlySet<MidiNote>>(() => new Set())
 
   const ensureOrgan = useCallback((): Organ => {

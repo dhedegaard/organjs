@@ -3,11 +3,13 @@ import type { PercussionSettings } from './audio/organ'
 import { drawbarLevelsSchema } from './audio/voicing'
 import { Drawbars } from './components/Drawbars'
 import { Keyboard } from './components/Keyboard'
+import { CopyLink } from './components/CopyLink'
 import { MidiPicker } from './components/MidiPicker'
 import { Tab } from './components/Tab'
 import { useMidiInput } from './hooks/useMidiInput'
 import { useOrgan } from './hooks/useOrgan'
 import { useQwertyKeys } from './hooks/useQwertyKeys'
+import { initialSettingsFromUrl, useRegistrationUrl } from './hooks/useRegistrationUrl'
 
 const MANUAL_LOW = midiNoteSchema.parse(48)
 const MANUAL_HIGH = midiNoteSchema.parse(84)
@@ -21,7 +23,8 @@ const PRESETS = {
 } as const
 
 export default function App() {
-  const organ = useOrgan()
+  const organ = useOrgan(initialSettingsFromUrl)
+  useRegistrationUrl(organ.settings)
   const qwerty = useQwertyKeys(organ)
   const midi = useMidiInput(organ)
   const { percussion } = organ.settings
@@ -74,6 +77,7 @@ export default function App() {
             />
           </label>
           <MidiPicker midi={midi} />
+          <CopyLink />
         </div>
       </section>
       <div className="fallboard" aria-hidden="true" />
