@@ -1,12 +1,17 @@
 import { describe, expect, it } from 'vitest'
 import { DEFAULT_SETTINGS } from '../audio/organ'
+import { drawbarLevelSchema } from '../audio/voicing'
 import {
+  CC_DRAWBAR_FIRST,
   CC_KEY_CLICK,
   CC_PERCUSSION,
   CC_PERCUSSION_DECAY,
   CC_PERCUSSION_HARMONIC,
+  CC_TREMULANT,
   ccToDrawbarLevel,
   ccToVolume,
+  controlChangesForSettings,
+  drawbarLevelToCc,
   parseMidiMessage,
   settingsPatchForControlChange,
 } from './midi'
@@ -105,5 +110,30 @@ describe('key click control change', () => {
   it('CC 96 switches key click at 64', () => {
     expect(settingsPatchForControlChange(DEFAULT_SETTINGS, CC_KEY_CLICK, 64)).toEqual({ keyClick: true })
     expect(settingsPatchForControlChange(DEFAULT_SETTINGS, CC_KEY_CLICK, 63)).toEqual({ keyClick: false })
+  })
+})
+
+describe('controlChangesForSettings', () => {
+  it('describes a whole registration when there is nothing to diff against', () => {
+    const changes = controlChangesForSettings(DEFAULT_SETTINGS)
+    expect(changes).toHaveLength(9 + 5)
+    expect(changes).toContainEqual({ controller: CC_DRAWBAR_FIRST, value: 127 })
+    expect(changes).toContainEqual({ controller: CC_DRAWBAR_FIRST + 3, value: 0 })
+    expect(changes).toContainEqual({ controller: CC_TREMULANT, value: 0 })
+    expect(changes).toContainEqual({ controller: CC_PERCUSSION_HARMONIC, value: 127 })
+    expect(changes).toContainEqual({ controller: CC_PERCUSSION_DECAY, value: 0 })
+    expect(changes.some((c) => c.controller === 11)).toBe(false)
+  })
+  it('emits only the controllers whose setting changed', () => {
+    const next = { ...DEFAULT_SETTINGS, tremulant: true, percussion: { ...DEFAULT_SETTINGS.percussion, decay: 'slow' as const } }
+    expect(controlChangesForSettings(next, DEFAULT_SETTINGS)).toEqual([
+      { controller: CC_TREMULANT, value: 127 },
+      { controller: CC_PERCUSSION_DECAY, value: 127 },
+    ])
+  })
+  it('round-trips every drawbar level through the CC scale', () => {
+    for (let level = 0; level <= 8; level++) {
+      expect(ccToDrawbarLevel(drawbarLevelToCc(drawbarLevelSchema.parse(level)))).toBe(level)
+    }
   })
 })

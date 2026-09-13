@@ -6,9 +6,11 @@ import { Keyboard } from './components/Keyboard'
 import { CopyLink } from './components/CopyLink'
 import { MidiPicker } from './components/MidiPicker'
 import { Tab } from './components/Tab'
+import { Transport } from './components/Transport'
 import { useMidiInput } from './hooks/useMidiInput'
 import { useOrgan } from './hooks/useOrgan'
 import { useQwertyKeys } from './hooks/useQwertyKeys'
+import { useSequencer } from './hooks/useSequencer'
 import { initialSettingsFromUrl, useRegistrationUrl } from './hooks/useRegistrationUrl'
 
 const MANUAL_LOW = midiNoteSchema.parse(48)
@@ -25,8 +27,11 @@ const PRESETS = {
 export default function App() {
   const organ = useOrgan(initialSettingsFromUrl)
   useRegistrationUrl(organ.settings)
-  const qwerty = useQwertyKeys(organ)
-  const midi = useMidiInput(organ)
+  const sequencer = useSequencer(organ)
+  // Every input plays through the sequencer so it can record.
+  const player = { ...organ, noteOn: sequencer.noteOn, noteOff: sequencer.noteOff }
+  const qwerty = useQwertyKeys(player)
+  const midi = useMidiInput(player)
   const { percussion } = organ.settings
   const setPercussion = (patch: Partial<PercussionSettings>) =>
     organ.updateSettings({ percussion: { ...percussion, ...patch } })
@@ -87,9 +92,12 @@ export default function App() {
         high={MANUAL_HIGH}
         activeNotes={organ.activeNotes}
         octave={qwerty.octave}
-        onNoteOn={organ.noteOn}
-        onNoteOff={organ.noteOff}
+        onNoteOn={player.noteOn}
+        onNoteOff={player.noteOff}
       />
+      <section className="recorder" aria-label="Recorder">
+        <Transport sequencer={sequencer} />
+      </section>
       <p className="hint">
         Click or drag across the keys, or play the Z and Q rows on your keyboard, or connect a MIDI keyboard. Pull the
         drawbars down to add harmonics. <kbd>,</kbd> and <kbd>.</kbd> shift the rows an octave

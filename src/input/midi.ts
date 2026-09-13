@@ -42,6 +42,10 @@ export function ccToDrawbarLevel(value: number): DrawbarLevel {
   return drawbarLevelSchema.parse(Math.round((value / 127) * DRAWBAR_MAX))
 }
 
+export function drawbarLevelToCc(level: DrawbarLevel): number {
+  return Math.round((level / DRAWBAR_MAX) * 127)
+}
+
 export function ccToVolume(value: number): number {
   return value / 127
 }
@@ -77,4 +81,33 @@ export function settingsPatchForControlChange(
     return { drawbars: withLevel(settings.drawbars, index, ccToDrawbarLevel(value)) }
   }
   return undefined
+}
+
+export interface ControlChange {
+  readonly controller: number
+  readonly value: number
+}
+
+const switchValue = (on: boolean): number => (on ? 127 : 0)
+
+/**
+ * The registration as control changes: everything when `previous` is omitted,
+ * otherwise only what differs. Volume is left out, as in the shareable URL.
+ */
+export function controlChangesForSettings(settings: OrganSettings, previous?: OrganSettings): ControlChange[] {
+  const changes: ControlChange[] = []
+  settings.drawbars.forEach((level, i) => {
+    if (previous === undefined || previous.drawbars[i] !== level) {
+      changes.push({ controller: CC_DRAWBAR_FIRST + i, value: drawbarLevelToCc(level) })
+    }
+  })
+  const flag = (controller: number, on: boolean, was: boolean | undefined) => {
+    if (was === undefined || was !== on) changes.push({ controller, value: switchValue(on) })
+  }
+  flag(CC_TREMULANT, settings.tremulant, previous?.tremulant)
+  flag(CC_PERCUSSION, settings.percussion.on, previous?.percussion.on)
+  flag(CC_PERCUSSION_HARMONIC, settings.percussion.harmonic === 3, previous && previous.percussion.harmonic === 3)
+  flag(CC_PERCUSSION_DECAY, settings.percussion.decay === 'slow', previous && previous.percussion.decay === 'slow')
+  flag(CC_KEY_CLICK, settings.keyClick, previous?.keyClick)
+  return changes
 }
