@@ -35,6 +35,8 @@ Run typecheck, lint and test before claiming work is done.
 - Design intent lives in `BACKLOG.md` (what's next) and the token block at the top of `index.css`.
 - Module-level `toMidiNote()` results don't narrow inside components (control flow stops at function boundaries); use `midiNoteSchema.parse(48)` for constants.
 - Offline engine checks: call `ctx.suspend(t).then(...)` *before* `await ctx.startRendering()` on an `OfflineAudioContext`; awaiting the suspend first deadlocks.
+- In component tests use `fireEvent.click(...)`, not `element.click()`: the latter runs outside `act`, so state set by the handler is not flushed before the next assertion.
+- Bytes handed to `Blob`/`File` must be `Uint8Array<ArrayBuffer>`; build them with `new Uint8Array([...])`, not `Uint8Array.from(...)`, or `tsc` rejects the `BlobPart`.
 
 ## Verifying in a browser
 
@@ -42,3 +44,6 @@ Run typecheck, lint and test before claiming work is done.
 - Playwright's Chromium rejects `requestMIDIAccess` even after `grantPermissions(['midi'])`; verify MIDI by stubbing `navigator.requestMIDIAccess` with a fake access object via `addInitScript` and pushing bytes to `input.onmidimessage`.
 - Start the dev server on a fixed port (`npm run dev -- --port 5180`) and stop it by PID via `lsof -ti:5180`, never by name.
 - After engine changes that affect which voices sound, assert the `.key--down` count against the engine in the Playwright pass; `activeNotes` in the UI is derived from the engine and can drift.
+- Press keys with `page.mouse` on the key's `boundingBox()`; `locator.dispatchEvent('pointerdown')` has no coordinates, so the `elementFromPoint` hit-test finds nothing and no note plays.
+- Exercise file import/export with `newPage({ acceptDownloads: true })` + `waitForEvent('download')` and `locator('.library__file').setInputFiles({ name, mimeType, buffer })`.
+- When comparing levels in an offline render, schedule the first event at ~0.1 s, not 0: the compressor and filters have a startup transient that skews peaks at t=0.
