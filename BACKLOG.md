@@ -13,7 +13,6 @@ Rough order of value. Done items move to git history, not here.
 
 ## Playing
 
-- [ ] Octave shift for the QWERTY rows (e.g. `[` / `]`).
 - [ ] Sustain / hold toggle so chords can be held while adjusting drawbars.
 - [ ] Second manual (Swell/Great) and a pedalboard with their own drawbar sets.
 - [ ] Touch: multi-finger chords on tablets (pointer map already supports multiple pointers; needs testing on device).

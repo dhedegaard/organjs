@@ -354,6 +354,14 @@ body {
   font-size: 13px;
   color: var(--text-dim);
 }
+.hint kbd {
+  font: inherit;
+  padding: 0 5px;
+  border: 1px solid rgba(184, 144, 90, 0.4);
+  border-radius: 4px;
+  color: var(--text);
+}
+.hint strong { color: var(--brass); font-weight: 600; }
 
 @media (max-width: 720px) {
   .rail { grid-template-columns: 1fr; justify-items: stretch; }

@@ -22,7 +22,7 @@ const PRESETS = {
 
 export default function App() {
   const organ = useOrgan()
-  useQwertyKeys(organ)
+  const qwerty = useQwertyKeys(organ)
   const midi = useMidiInput(organ)
   const { percussion } = organ.settings
   const setPercussion = (patch: Partial<PercussionSettings>) =>
@@ -81,10 +81,21 @@ export default function App() {
         low={MANUAL_LOW}
         high={MANUAL_HIGH}
         activeNotes={organ.activeNotes}
+        octave={qwerty.octave}
         onNoteOn={organ.noteOn}
         onNoteOff={organ.noteOff}
       />
-      <p className="hint">Click or drag across the keys, or play the Z and Q rows on your keyboard, or connect a MIDI keyboard. Pull the drawbars down to add harmonics.</p>
+      <p className="hint">
+        Click or drag across the keys, or play the Z and Q rows on your keyboard, or connect a MIDI keyboard. Pull the
+        drawbars down to add harmonics. <kbd>,</kbd> and <kbd>.</kbd> shift the rows an octave
+        {qwerty.octave !== 0 && (
+          <>
+            {' '}
+            (now <strong>{qwerty.octave > 0 ? `+${qwerty.octave}` : qwerty.octave}</strong>)
+          </>
+        )}
+        .
+      </p>
     </main>
   )
 }

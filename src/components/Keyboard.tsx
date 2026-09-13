@@ -1,11 +1,13 @@
 import { useCallback, useRef, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react'
 import { isBlackKey, keyboardRange, midiToName, toMidiNote, type MidiNote } from '../audio/notes'
-import { keyLabelForNote } from '../input/qwerty'
+import { keyLabelForNote, type OctaveShift } from '../input/qwerty'
 
 interface KeyboardProps {
   readonly low: MidiNote
   readonly high: MidiNote
   readonly activeNotes: ReadonlySet<MidiNote>
+  /** Octave shift of the QWERTY rows, used to place the key hints. */
+  readonly octave?: OctaveShift
   readonly onNoteOn: (note: MidiNote) => void
   readonly onNoteOff: (note: MidiNote) => void
 }
@@ -34,7 +36,7 @@ function noteAtPoint(x: number, y: number): MidiNote | undefined {
   return raw === undefined ? undefined : toMidiNote(Number(raw))
 }
 
-export function Keyboard({ low, high, activeNotes, onNoteOn, onNoteOff }: KeyboardProps) {
+export function Keyboard({ low, high, activeNotes, octave = 0, onNoteOn, onNoteOff }: KeyboardProps) {
   const { keys, whiteCount } = layoutKeys(low, high)
   /** Note currently held by each pointer, so a drag glides across keys. */
   const pointers = useRef(new Map<number, MidiNote>())
@@ -78,7 +80,7 @@ export function Keyboard({ low, high, activeNotes, onNoteOn, onNoteOff }: Keyboa
       onPointerCancel={onPointerEnd}
     >
       {keys.map((key) => {
-        const label = keyLabelForNote(key.note)
+        const label = keyLabelForNote(key.note, octave)
         const name = midiToName(key.note)
         return (
           <div
