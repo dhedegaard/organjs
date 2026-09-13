@@ -4,7 +4,6 @@ Rough order of value. Done items move to git history, not here.
 
 ## Sound
 
-- [ ] Percussion (Hammond 2nd/3rd harmonic click with fast decay) — big part of the "organ" feel for jazz registrations.
 - [ ] Key click: short noise burst on note on/off.
 - [ ] Rotary speaker / chorus-vibrato (Leslie): stereo, slow/fast with ramp between speeds.
 - [ ] Pipe-organ mode: sampled or wavetable stops (principal, flute, reed) as an alternative to drawbars.

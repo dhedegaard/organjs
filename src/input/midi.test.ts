@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import { DEFAULT_SETTINGS } from '../audio/organ'
-import { ccToDrawbarLevel, ccToVolume, parseMidiMessage, settingsPatchForControlChange } from './midi'
+import {
+  CC_PERCUSSION,
+  CC_PERCUSSION_DECAY,
+  CC_PERCUSSION_HARMONIC,
+  ccToDrawbarLevel,
+  ccToVolume,
+  parseMidiMessage,
+  settingsPatchForControlChange,
+} from './midi'
 
 const bytes = (...values: number[]) => new Uint8Array(values)
 
@@ -62,5 +70,32 @@ describe('settingsPatchForControlChange', () => {
   })
   it('ignores unmapped controllers', () => {
     expect(settingsPatchForControlChange(settings, 1, 100)).toBeUndefined()
+  })
+})
+
+describe('percussion control changes', () => {
+  it('CC 93 switches percussion on and off', () => {
+    expect(settingsPatchForControlChange(DEFAULT_SETTINGS, CC_PERCUSSION, 127)).toEqual({
+      percussion: { ...DEFAULT_SETTINGS.percussion, on: true },
+    })
+    expect(settingsPatchForControlChange(DEFAULT_SETTINGS, CC_PERCUSSION, 0)).toEqual({
+      percussion: { ...DEFAULT_SETTINGS.percussion, on: false },
+    })
+  })
+  it('CC 94 picks the 3rd harmonic above half, 2nd below', () => {
+    expect(settingsPatchForControlChange(DEFAULT_SETTINGS, CC_PERCUSSION_HARMONIC, 100)).toEqual({
+      percussion: { ...DEFAULT_SETTINGS.percussion, harmonic: 3 },
+    })
+    expect(settingsPatchForControlChange(DEFAULT_SETTINGS, CC_PERCUSSION_HARMONIC, 10)).toEqual({
+      percussion: { ...DEFAULT_SETTINGS.percussion, harmonic: 2 },
+    })
+  })
+  it('CC 95 picks slow decay above half, fast below', () => {
+    expect(settingsPatchForControlChange(DEFAULT_SETTINGS, CC_PERCUSSION_DECAY, 64)).toEqual({
+      percussion: { ...DEFAULT_SETTINGS.percussion, decay: 'slow' },
+    })
+    expect(settingsPatchForControlChange(DEFAULT_SETTINGS, CC_PERCUSSION_DECAY, 63)).toEqual({
+      percussion: { ...DEFAULT_SETTINGS.percussion, decay: 'fast' },
+    })
   })
 })

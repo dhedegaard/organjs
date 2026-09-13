@@ -1,4 +1,5 @@
 import { midiNoteSchema } from './audio/notes'
+import type { PercussionSettings } from './audio/organ'
 import { drawbarLevelsSchema } from './audio/voicing'
 import { Drawbars } from './components/Drawbars'
 import { Keyboard } from './components/Keyboard'
@@ -23,6 +24,9 @@ export default function App() {
   const organ = useOrgan()
   useQwertyKeys(organ)
   const midi = useMidiInput(organ)
+  const { percussion } = organ.settings
+  const setPercussion = (patch: Partial<PercussionSettings>) =>
+    organ.updateSettings({ percussion: { ...percussion, ...patch } })
 
   return (
     <main className="console">
@@ -42,7 +46,22 @@ export default function App() {
               </button>
             ))}
           </div>
-          <Tab label="Tremulant" on={organ.settings.tremulant} onToggle={(tremulant) => organ.updateSettings({ tremulant })} />
+          <div className="tabs">
+            <Tab label="Tremulant" on={organ.settings.tremulant} onToggle={(tremulant) => organ.updateSettings({ tremulant })} />
+            <Tab label="Percussion" on={percussion.on} onToggle={(on) => setPercussion({ on })} />
+            <Tab
+              label="Harmonic"
+              on={percussion.harmonic === 3}
+              states={['2nd', '3rd']}
+              onToggle={(third) => setPercussion({ harmonic: third ? 3 : 2 })}
+            />
+            <Tab
+              label="Decay"
+              on={percussion.decay === 'slow'}
+              states={['Fast', 'Slow']}
+              onToggle={(slow) => setPercussion({ decay: slow ? 'slow' : 'fast' })}
+            />
+          </div>
           <label className="volume">
             <span>Volume</span>
             <input

@@ -46,10 +46,15 @@ export function ccToVolume(value: number): number {
   return value / 127
 }
 
-/** Fixed controller map: expression pedal, nine consecutive drawbar CCs, a tremulant switch. */
+/** Fixed controller map: expression pedal, nine consecutive drawbar CCs, then the rocker tabs. */
 export const CC_EXPRESSION = 11
 export const CC_DRAWBAR_FIRST = 12
 export const CC_TREMULANT = 92
+export const CC_PERCUSSION = 93
+export const CC_PERCUSSION_HARMONIC = 94
+export const CC_PERCUSSION_DECAY = 95
+
+const isOn = (value: number): boolean => value >= 64
 
 export function settingsPatchForControlChange(
   settings: OrganSettings,
@@ -57,7 +62,14 @@ export function settingsPatchForControlChange(
   value: number,
 ): Partial<OrganSettings> | undefined {
   if (controller === CC_EXPRESSION) return { volume: ccToVolume(value) }
-  if (controller === CC_TREMULANT) return { tremulant: value >= 64 }
+  if (controller === CC_TREMULANT) return { tremulant: isOn(value) }
+  if (controller === CC_PERCUSSION) return { percussion: { ...settings.percussion, on: isOn(value) } }
+  if (controller === CC_PERCUSSION_HARMONIC) {
+    return { percussion: { ...settings.percussion, harmonic: isOn(value) ? 3 : 2 } }
+  }
+  if (controller === CC_PERCUSSION_DECAY) {
+    return { percussion: { ...settings.percussion, decay: isOn(value) ? 'slow' : 'fast' } }
+  }
   const index = controller - CC_DRAWBAR_FIRST
   if (index >= 0 && index < DRAWBAR_COUNT) {
     return { drawbars: withLevel(settings.drawbars, index, ccToDrawbarLevel(value)) }

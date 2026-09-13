@@ -7,15 +7,28 @@ import {
   type DrawbarLevels,
 } from './voicing'
 
+export type PercussionHarmonic = 2 | 3
+export type PercussionDecay = 'fast' | 'slow'
+
+export interface PercussionSettings {
+  readonly on: boolean
+  readonly harmonic: PercussionHarmonic
+  readonly decay: PercussionDecay
+}
+
 export interface OrganSettings {
   readonly drawbars: DrawbarLevels
   readonly tremulant: boolean
+  readonly percussion: PercussionSettings
   readonly volume: number
 }
+
+export const DEFAULT_PERCUSSION: PercussionSettings = { on: false, harmonic: 3, decay: 'fast' }
 
 export const DEFAULT_SETTINGS: OrganSettings = {
   drawbars: DEFAULT_LEVELS,
   tremulant: false,
+  percussion: DEFAULT_PERCUSSION,
   volume: 0.6,
 }
 
@@ -24,6 +37,8 @@ export const MAX_VOICES = 16
 
 const ATTACK_SECONDS = 0.012
 const RELEASE_SECONDS = 0.08
+export const PERCUSSION_DECAY_SECONDS: Readonly<Record<PercussionDecay, number>> = { fast: 0.2, slow: 0.6 }
+const PERCUSSION_GAIN = 0.35
 const TREMULANT_RATE_HZ = 5.8
 const TREMULANT_DEPTH = 0.18
 /** Cents of detune per partial index, giving a subtle pipe-like chorus. */
@@ -78,6 +93,8 @@ export class Organ {
 
   noteOn(note: MidiNote): void {
     if (this.voices.has(note)) return
+    // Hammond single-trigger: percussion only sounds on a note struck from silence.
+    if (this.settings.percussion.on && this.voices.size === 0) this.triggerPercussion(note)
     if (this.voices.size >= MAX_VOICES) this.stealOldestVoice()
     const now = this.ctx.currentTime
     const partials = partialsFor(midiToFrequency(note), this.settings.drawbars)
@@ -117,6 +134,24 @@ export class Organ {
     const stopAt = now + RELEASE_SECONDS + 0.02
     for (const osc of voice.oscillators) osc.stop(stopAt)
     voice.oscillators[0]?.addEventListener('ended', () => voice.envelope.disconnect())
+  }
+
+  /** A short sine burst at the 2nd or 3rd harmonic with an exponential decay. */
+  private triggerPercussion(note: MidiNote): void {
+    const { harmonic, decay } = this.settings.percussion
+    const now = this.ctx.currentTime
+    const seconds = PERCUSSION_DECAY_SECONDS[decay]
+    const osc = this.ctx.createOscillator()
+    osc.type = 'sine'
+    osc.frequency.value = midiToFrequency(note) * harmonic
+    const gain = this.ctx.createGain()
+    gain.gain.setValueAtTime(PERCUSSION_GAIN, now)
+    gain.gain.exponentialRampToValueAtTime(0.001, now + seconds)
+    osc.connect(gain)
+    gain.connect(this.master)
+    osc.start(now)
+    osc.stop(now + seconds + 0.02)
+    osc.addEventListener('ended', () => gain.disconnect())
   }
 
   /** The Map keeps insertion order, so the first key is the longest-held note. */
