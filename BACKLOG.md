@@ -18,7 +18,6 @@ Rough order of value. Done items move to git history, not here.
 
 ## Recording and editing
 
-- [ ] Note editor: piano-roll view of a recording where notes can be added, moved, resized and deleted, with snap-to-grid and undo. Save/load sequences (local storage first, file export later, MIDI file import/export as a stretch).
 
 ## Console UI
 

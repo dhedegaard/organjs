@@ -23,6 +23,7 @@ const playback = (patch: Partial<PlaybackController> = {}): PlaybackController =
 const sequencer = (patch: Partial<SequencerController>): SequencerController => ({
   sequence: EMPTY_SEQUENCE,
   setSequence: vi.fn(),
+  history: { undo: vi.fn(), redo: vi.fn(), canUndo: false, canRedo: false },
   recording: false,
   recordingSeconds: 0,
   startRecording: vi.fn(),

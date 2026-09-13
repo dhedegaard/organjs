@@ -5,6 +5,7 @@ import { settingsPatchForControlChange } from '../input/midi'
 import { Player, type PlayerState } from '../sequence/player'
 import { Recorder } from '../sequence/recorder'
 import { EMPTY_SEQUENCE, type Sequence } from '../sequence/sequence'
+import { useHistory } from './useHistory'
 import type { OrganController } from './useOrgan'
 
 export interface PlaybackController {
@@ -23,9 +24,18 @@ export interface PlaybackController {
   readonly setLoop: (loop: boolean) => void
 }
 
+export interface EditHistory {
+  readonly undo: () => void
+  readonly redo: () => void
+  readonly canUndo: boolean
+  readonly canRedo: boolean
+}
+
 export interface SequencerController {
   readonly sequence: Sequence
+  /** Replace the sequence; each call is one undo step. */
   readonly setSequence: (sequence: Sequence) => void
+  readonly history: EditHistory
   readonly recording: boolean
   /** Seconds since recording started; 0 when idle. */
   readonly recordingSeconds: number
@@ -53,7 +63,7 @@ const POSITION_REFRESH_MS = 33
  * exclusive: starting one stops the other.
  */
 export function useSequencer(organ: OrganController, clock: Clock = performanceClock): SequencerController {
-  const [sequence, setSequence] = useState<Sequence>(EMPTY_SEQUENCE)
+  const { present: sequence, set: setSequence, undo, redo, canUndo, canRedo } = useHistory<Sequence>(EMPTY_SEQUENCE)
   const [recording, setRecording] = useState(false)
   const [recordingSeconds, setRecordingSeconds] = useState(0)
   const recorderRef = useRef<Recorder | null>(null)
@@ -143,7 +153,7 @@ export function useSequencer(organ: OrganController, clock: Clock = performanceC
     setSequence(recorder.finish(clock()))
     setRecording(false)
     setRecordingSeconds(0)
-  }, [clock])
+  }, [clock, setSequence])
 
   const startRecording = useCallback(() => {
     if (recorderRef.current) return
@@ -205,9 +215,12 @@ export function useSequencer(organ: OrganController, clock: Clock = performanceC
     [playerState, position, duration, rate, loop, play, pause, stop, seek, setRate, setLoop],
   )
 
+  const history = useMemo<EditHistory>(() => ({ undo, redo, canUndo, canRedo }), [undo, redo, canUndo, canRedo])
+
   return {
     sequence,
     setSequence,
+    history,
     recording,
     recordingSeconds,
     startRecording,

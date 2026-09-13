@@ -5,6 +5,7 @@ import { Drawbars } from './components/Drawbars'
 import { Keyboard } from './components/Keyboard'
 import { CopyLink } from './components/CopyLink'
 import { MidiPicker } from './components/MidiPicker'
+import { PianoRoll } from './components/PianoRoll'
 import { Tab } from './components/Tab'
 import { Transport } from './components/Transport'
 import { useMidiInput } from './hooks/useMidiInput'
@@ -97,6 +98,15 @@ export default function App() {
       />
       <section className="recorder" aria-label="Recorder">
         <Transport sequencer={sequencer} />
+        <PianoRoll
+          sequence={sequencer.sequence}
+          onChange={sequencer.setSequence}
+          position={sequencer.playback.position}
+          onSeek={sequencer.playback.seek}
+          low={MANUAL_LOW}
+          high={MANUAL_HIGH}
+          history={sequencer.history}
+        />
       </section>
       <p className="hint">
         Click or drag across the keys, or play the Z and Q rows on your keyboard, or connect a MIDI keyboard. Pull the
