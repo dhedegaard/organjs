@@ -36,7 +36,8 @@ export function useOrgan(initialSettings: OrganSettings | (() => OrganSettings) 
     (note: MidiNote) => {
       const organ = ensureOrgan()
       organ.noteOn(note)
-      setActiveNotes((prev) => (prev.has(note) ? prev : new Set(prev).add(note)))
+      // Mirror the engine rather than add to the set: it may have stolen a voice.
+      setActiveNotes(organ.activeNotes)
     },
     [ensureOrgan],
   )
