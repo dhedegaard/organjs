@@ -41,7 +41,7 @@ describe('useRegistrationUrl', () => {
     act(() => {
       vi.runAllTimers()
     })
-    expect(window.location.hash).toBe('#d=888800000&t=0&p=0&h=3&dc=fast')
+    expect(window.location.hash).toBe('#d=888800000&t=0&p=0&h=3&dc=fast&k=0')
   })
 
   it('does not push history entries', () => {

@@ -64,6 +64,47 @@ export class FakeOscillatorNode extends FakeNode {
   }
 }
 
+export class FakeBiquadFilterNode extends FakeNode {
+  type: BiquadFilterType = 'lowpass'
+  readonly frequency = new FakeAudioParam(350)
+  readonly Q = new FakeAudioParam(1)
+}
+
+export class FakeAudioBuffer {
+  readonly numberOfChannels: number
+  readonly length: number
+  readonly sampleRate: number
+  private readonly channels: Float32Array[]
+  constructor(numberOfChannels: number, length: number, sampleRate: number) {
+    this.numberOfChannels = numberOfChannels
+    this.length = length
+    this.sampleRate = sampleRate
+    this.channels = Array.from({ length: numberOfChannels }, () => new Float32Array(length))
+  }
+  getChannelData(channel: number): Float32Array {
+    const data = this.channels[channel]
+    if (!data) throw new RangeError(`no channel ${channel}`)
+    return data
+  }
+}
+
+export class FakeBufferSourceNode extends FakeNode {
+  buffer: FakeAudioBuffer | null = null
+  started = false
+  stopped = false
+  private readonly listeners: Array<() => void> = []
+  start(): void {
+    this.started = true
+  }
+  stop(): void {
+    this.stopped = true
+    for (const listener of this.listeners) listener()
+  }
+  addEventListener(_type: 'ended', listener: () => void): void {
+    this.listeners.push(listener)
+  }
+}
+
 export class FakeCompressorNode extends FakeNode {
   readonly threshold = new FakeAudioParam()
   readonly knee = new FakeAudioParam()
@@ -74,8 +115,10 @@ export class FakeCompressorNode extends FakeNode {
 
 export class FakeAudioContext {
   currentTime = 0
+  readonly sampleRate = 48_000
   readonly destination = new FakeNode()
   readonly oscillators: FakeOscillatorNode[] = []
+  readonly bufferSources: FakeBufferSourceNode[] = []
   createGain(): FakeGainNode {
     return new FakeGainNode()
   }
@@ -86,6 +129,17 @@ export class FakeAudioContext {
   }
   createDynamicsCompressor(): FakeCompressorNode {
     return new FakeCompressorNode()
+  }
+  createBiquadFilter(): FakeBiquadFilterNode {
+    return new FakeBiquadFilterNode()
+  }
+  createBuffer(numberOfChannels: number, length: number, sampleRate: number): FakeAudioBuffer {
+    return new FakeAudioBuffer(numberOfChannels, length, sampleRate)
+  }
+  createBufferSource(): FakeBufferSourceNode {
+    const source = new FakeBufferSourceNode()
+    this.bufferSources.push(source)
+    return source
   }
 }
 

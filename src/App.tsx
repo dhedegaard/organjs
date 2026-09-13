@@ -64,6 +64,7 @@ export default function App() {
               states={['Fast', 'Slow']}
               onToggle={(slow) => setPercussion({ decay: slow ? 'slow' : 'fast' })}
             />
+            <Tab label="Key click" on={organ.settings.keyClick} onToggle={(keyClick) => organ.updateSettings({ keyClick })} />
           </div>
           <label className="volume">
             <span>Volume</span>

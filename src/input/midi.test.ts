@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { DEFAULT_SETTINGS } from '../audio/organ'
 import {
+  CC_KEY_CLICK,
   CC_PERCUSSION,
   CC_PERCUSSION_DECAY,
   CC_PERCUSSION_HARMONIC,
@@ -97,5 +98,12 @@ describe('percussion control changes', () => {
     expect(settingsPatchForControlChange(DEFAULT_SETTINGS, CC_PERCUSSION_DECAY, 63)).toEqual({
       percussion: { ...DEFAULT_SETTINGS.percussion, decay: 'fast' },
     })
+  })
+})
+
+describe('key click control change', () => {
+  it('CC 96 switches key click at 64', () => {
+    expect(settingsPatchForControlChange(DEFAULT_SETTINGS, CC_KEY_CLICK, 64)).toEqual({ keyClick: true })
+    expect(settingsPatchForControlChange(DEFAULT_SETTINGS, CC_KEY_CLICK, 63)).toEqual({ keyClick: false })
   })
 })

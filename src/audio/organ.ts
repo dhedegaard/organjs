@@ -20,6 +20,8 @@ export interface OrganSettings {
   readonly drawbars: DrawbarLevels
   readonly tremulant: boolean
   readonly percussion: PercussionSettings
+  /** Hammond-style contact noise on key press and release. */
+  readonly keyClick: boolean
   readonly volume: number
 }
 
@@ -29,6 +31,7 @@ export const DEFAULT_SETTINGS: OrganSettings = {
   drawbars: DEFAULT_LEVELS,
   tremulant: false,
   percussion: DEFAULT_PERCUSSION,
+  keyClick: false,
   volume: 0.6,
 }
 
@@ -39,6 +42,12 @@ const ATTACK_SECONDS = 0.012
 const RELEASE_SECONDS = 0.08
 export const PERCUSSION_DECAY_SECONDS: Readonly<Record<PercussionDecay, number>> = { fast: 0.2, slow: 0.6 }
 const PERCUSSION_GAIN = 0.35
+/** Attack and release clicks; the release is softer, as on the real contacts. */
+export const KEY_CLICK_GAIN: Readonly<Record<'on' | 'off', number>> = { on: 0.3, off: 0.15 }
+const KEY_CLICK_SECONDS = 0.03
+const KEY_CLICK_FILTER_HZ = 2_800
+/** The shared noise buffer is longer than one click so each click can start from a different spot. */
+const NOISE_BUFFER_SECONDS = 0.25
 const TREMULANT_RATE_HZ = 5.8
 const TREMULANT_DEPTH = 0.18
 /** Cents of detune per partial index, giving a subtle pipe-like chorus. */
@@ -59,6 +68,7 @@ export class Organ {
   private readonly master: GainNode
   private readonly tremulantLfo: OscillatorNode
   private readonly tremulantDepth: GainNode
+  private readonly noise: AudioBuffer
   private readonly ctx: AudioContext
   private settings: OrganSettings
 
@@ -85,6 +95,10 @@ export class Organ {
     this.tremulantLfo.connect(this.tremulantDepth)
     this.tremulantDepth.connect(this.master.gain)
     this.tremulantLfo.start()
+
+    this.noise = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * NOISE_BUFFER_SECONDS), ctx.sampleRate)
+    const samples = this.noise.getChannelData(0)
+    for (let i = 0; i < samples.length; i++) samples[i] = Math.random() * 2 - 1
   }
 
   get activeNotes(): ReadonlySet<MidiNote> {
@@ -95,6 +109,7 @@ export class Organ {
     if (this.voices.has(note)) return
     // Hammond single-trigger: percussion only sounds on a note struck from silence.
     if (this.settings.percussion.on && this.voices.size === 0) this.triggerPercussion(note)
+    if (this.settings.keyClick) this.triggerKeyClick('on')
     if (this.voices.size >= MAX_VOICES) this.stealOldestVoice()
     const now = this.ctx.currentTime
     const partials = partialsFor(midiToFrequency(note), this.settings.drawbars)
@@ -127,6 +142,7 @@ export class Organ {
     const voice = this.voices.get(note)
     if (!voice) return
     this.voices.delete(note)
+    if (this.settings.keyClick) this.triggerKeyClick('off')
     const now = this.ctx.currentTime
     voice.envelope.gain.cancelScheduledValues(now)
     voice.envelope.gain.setValueAtTime(voice.envelope.gain.value, now)
@@ -152,6 +168,26 @@ export class Organ {
     osc.start(now)
     osc.stop(now + seconds + 0.02)
     osc.addEventListener('ended', () => gain.disconnect())
+  }
+
+  /** A few milliseconds of band-passed noise, read from a random spot in the shared buffer. */
+  private triggerKeyClick(edge: 'on' | 'off'): void {
+    const now = this.ctx.currentTime
+    const source = this.ctx.createBufferSource()
+    source.buffer = this.noise
+    const filter = this.ctx.createBiquadFilter()
+    filter.type = 'bandpass'
+    filter.frequency.value = KEY_CLICK_FILTER_HZ
+    filter.Q.value = 0.7
+    const gain = this.ctx.createGain()
+    gain.gain.setValueAtTime(KEY_CLICK_GAIN[edge], now)
+    gain.gain.exponentialRampToValueAtTime(0.001, now + KEY_CLICK_SECONDS)
+    source.connect(filter)
+    filter.connect(gain)
+    gain.connect(this.master)
+    const offset = Math.random() * (NOISE_BUFFER_SECONDS - KEY_CLICK_SECONDS)
+    source.start(now, offset, KEY_CLICK_SECONDS)
+    source.addEventListener('ended', () => gain.disconnect())
   }
 
   /** The Map keeps insertion order, so the first key is the longest-held note. */

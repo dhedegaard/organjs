@@ -53,6 +53,7 @@ export const CC_TREMULANT = 92
 export const CC_PERCUSSION = 93
 export const CC_PERCUSSION_HARMONIC = 94
 export const CC_PERCUSSION_DECAY = 95
+export const CC_KEY_CLICK = 96
 
 const isOn = (value: number): boolean => value >= 64
 
@@ -63,6 +64,7 @@ export function settingsPatchForControlChange(
 ): Partial<OrganSettings> | undefined {
   if (controller === CC_EXPRESSION) return { volume: ccToVolume(value) }
   if (controller === CC_TREMULANT) return { tremulant: isOn(value) }
+  if (controller === CC_KEY_CLICK) return { keyClick: isOn(value) }
   if (controller === CC_PERCUSSION) return { percussion: { ...settings.percussion, on: isOn(value) } }
   if (controller === CC_PERCUSSION_HARMONIC) {
     return { percussion: { ...settings.percussion, harmonic: isOn(value) ? 3 : 2 } }

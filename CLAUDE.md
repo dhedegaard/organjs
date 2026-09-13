@@ -14,10 +14,10 @@ Run typecheck, lint and test before claiming work is done.
 
 ## Layout
 
-- `src/audio/` — framework-free engine. `notes.ts` (branded `MidiNote`/`Hertz` via zod), `voicing.ts` (drawbars → partials), `organ.ts` (`Organ` class: one voice per held note, one sine oscillator per drawbar, envelope, tremulant LFO, master gain → compressor). Nothing in here imports React.
-- `src/input/` — QWERTY → note mapping, keyed on physical `KeyboardEvent.code`; `midi.ts` parses raw Web MIDI bytes with zod and maps CCs (11 volume, 12–20 drawbars, 92 tremulant, 93 percussion, 94 harmonic 2nd/3rd, 95 decay fast/slow; switches flip at 64) to settings patches.
+- `src/audio/` — framework-free engine. `notes.ts` (branded `MidiNote`/`Hertz` via zod), `voicing.ts` (drawbars → partials), `organ.ts` (`Organ` class: one voice per held note, one sine oscillator per drawbar, envelope, tremulant LFO, key-click noise bursts from a shared buffer, master gain → compressor). Nothing in here imports React.
+- `src/input/` — QWERTY → note mapping, keyed on physical `KeyboardEvent.code`; `midi.ts` parses raw Web MIDI bytes with zod and maps CCs (11 volume, 12–20 drawbars, 92 tremulant, 93 percussion, 94 harmonic 2nd/3rd, 95 decay fast/slow, 96 key click; switches flip at 64) to settings patches.
 - `src/hooks/` — `useOrgan` owns the `AudioContext` (created lazily on first note, browsers need a gesture) and the settings state, mirroring the engine's voice set after every `noteOn` (voices can be stolen); `useQwertyKeys` wires window key events and owns the octave shift (`,`/`.`); `useMidiInput` requests Web MIDI on `connect()` and drives the organ from the selected input; `useRegistrationUrl` mirrors settings into the URL hash.
-- `src/state/registration.ts` — encode/decode the shareable registration (`d=888000000&t=1&p=1&h=3&dc=fast`) with zod; volume is deliberately excluded.
+- `src/state/registration.ts` — encode/decode the shareable registration (`d=888000000&t=1&p=1&h=3&dc=fast&k=0`) with zod; volume is deliberately excluded.
 - `src/components/` — `Keyboard` (pointer glide via `elementFromPoint`, keys carry `data-midi`), `Drawbar`/`Drawbars` (custom `role=slider`, pull down = louder), `Tab` (rocker switch, optional `states` labels), `CopyLink`.
 - `src/index.css` — single stylesheet, design tokens on `:root`. Dark room, walnut cabinet, ivory/ebony keys, Hammond cap colours (brown 16'/5⅓', black mutations, white unisons). One typeface: Instrument Sans.
 

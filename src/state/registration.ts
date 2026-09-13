@@ -7,6 +7,7 @@ export interface Registration {
   readonly drawbars: DrawbarLevels
   readonly tremulant: boolean
   readonly percussion: PercussionSettings
+  readonly keyClick: boolean
 }
 
 const flag = z.enum(['0', '1']).transform((v) => v === '1')
@@ -23,16 +24,18 @@ const paramsSchema = z.object({
   p: flag.optional(),
   h: z.enum(['2', '3']).transform(Number).pipe(z.literal([2, 3])).optional(),
   dc: z.enum(['fast', 'slow']).optional(),
+  k: flag.optional(),
 })
 
 export function encodeRegistration(settings: OrganSettings): string {
-  const { drawbars, tremulant, percussion } = settings
+  const { drawbars, tremulant, percussion, keyClick } = settings
   return new URLSearchParams({
     d: drawbars.join(''),
     t: tremulant ? '1' : '0',
     p: percussion.on ? '1' : '0',
     h: String(percussion.harmonic),
     dc: percussion.decay,
+    k: keyClick ? '1' : '0',
   }).toString()
 }
 
@@ -43,7 +46,7 @@ export function decodeRegistration(hash: string): Registration | undefined {
   const raw = Object.fromEntries(new URLSearchParams(query))
   const parsed = paramsSchema.safeParse(raw)
   if (!parsed.success) return undefined
-  const { d, t, p, h, dc } = parsed.data
+  const { d, t, p, h, dc, k } = parsed.data
   const base = DEFAULT_SETTINGS
   return {
     drawbars: d ?? base.drawbars,
@@ -53,5 +56,6 @@ export function decodeRegistration(hash: string): Registration | undefined {
       harmonic: h ?? base.percussion.harmonic,
       decay: dc ?? base.percussion.decay,
     },
+    keyClick: k ?? base.keyClick,
   }
 }

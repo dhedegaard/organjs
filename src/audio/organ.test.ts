@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { midiNoteSchema } from './notes'
-import { DEFAULT_SETTINGS, MAX_VOICES, Organ, PERCUSSION_DECAY_SECONDS } from './organ'
+import { DEFAULT_SETTINGS, KEY_CLICK_GAIN, MAX_VOICES, Organ, PERCUSSION_DECAY_SECONDS } from './organ'
 import { DRAWBAR_COUNT } from './voicing'
 import { fakeAudioContext } from './testing/fakeAudioContext'
 
@@ -85,5 +85,59 @@ describe('percussion', () => {
 
   it('exposes distinct decay times for fast and slow', () => {
     expect(PERCUSSION_DECAY_SECONDS.fast).toBeLessThan(PERCUSSION_DECAY_SECONDS.slow)
+  })
+})
+
+describe('key click', () => {
+  const withKeyClick = { ...DEFAULT_SETTINGS, keyClick: true }
+
+  it('is off by default and plays no noise burst', () => {
+    const ctx = fakeAudioContext()
+    const organ = new Organ(ctx)
+    organ.noteOn(note(60))
+    organ.noteOff(note(60))
+    expect(DEFAULT_SETTINGS.keyClick).toBe(false)
+    expect(ctx.bufferSources.length).toBe(0)
+  })
+
+  it('fires a noise burst on note on and another on note off', () => {
+    const ctx = fakeAudioContext()
+    const organ = new Organ(ctx, withKeyClick)
+    organ.noteOn(note(60))
+    expect(ctx.bufferSources.length).toBe(1)
+    expect(ctx.bufferSources[0]?.started).toBe(true)
+    organ.noteOff(note(60))
+    expect(ctx.bufferSources.length).toBe(2)
+  })
+
+  it('does not click for a note that is not held', () => {
+    const ctx = fakeAudioContext()
+    const organ = new Organ(ctx, withKeyClick)
+    organ.noteOff(note(60))
+    organ.noteOn(note(60))
+    organ.noteOn(note(60))
+    expect(ctx.bufferSources.length).toBe(1)
+  })
+
+  it('shares one noise buffer between clicks', () => {
+    const ctx = fakeAudioContext()
+    const organ = new Organ(ctx, withKeyClick)
+    organ.noteOn(note(60))
+    organ.noteOn(note(64))
+    expect(ctx.bufferSources[0]?.buffer).toBe(ctx.bufferSources[1]?.buffer)
+    expect(ctx.bufferSources[0]?.buffer?.getChannelData(0).some((s) => s !== 0)).toBe(true)
+  })
+
+  it('follows the setting when it is toggled mid-performance', () => {
+    const ctx = fakeAudioContext()
+    const organ = new Organ(ctx)
+    organ.noteOn(note(60))
+    organ.update(withKeyClick)
+    organ.noteOff(note(60))
+    expect(ctx.bufferSources.length).toBe(1)
+  })
+
+  it('makes the release click quieter than the attack', () => {
+    expect(KEY_CLICK_GAIN.off).toBeLessThan(KEY_CLICK_GAIN.on)
   })
 })
